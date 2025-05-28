@@ -32,15 +32,18 @@ class ProjectResource extends Resource
         return $form->schema([
             TextInput::make('code')
                 ->label('Kode')
+                ->placeholder('Masukkan kode proyek')
                 ->required()
                 ->unique(ignoreRecord: true),
 
             TextInput::make('name')
                 ->label('Nama')
+                ->placeholder('Masukkan nama proyek')
                 ->required(),
 
             Textarea::make('description')
                 ->label('Deskripsi')
+                ->placeholder('Masukkan deskripsi proyek')
                 ->rows(3)
                 ->columnSpan('full'),
 
