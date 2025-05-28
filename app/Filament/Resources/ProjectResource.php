@@ -36,7 +36,7 @@ class ProjectResource extends Resource
                 ->unique(ignoreRecord: true),
 
             TextInput::make('name')
-                ->label('Nama Proyek')
+                ->label('Nama')
                 ->required(),
 
             Textarea::make('description')
@@ -63,7 +63,12 @@ class ProjectResource extends Resource
                     ->searchable(),
 
                 TextColumn::make('name')
-                    ->label('Nama Proyek')
+                    ->label('Nama')
+                    ->sortable()
+                    ->searchable(),
+                
+                TextColumn::make('description')
+                    ->label('Deskripsi')
                     ->sortable()
                     ->searchable(),
 
