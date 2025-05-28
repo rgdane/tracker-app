@@ -37,7 +37,7 @@ class DepartmentResource extends Resource
                     ->unique(ignoreRecord: true),
 
                 TextInput::make('name')
-                    ->label('Nama Departemen')
+                    ->label('Nama')
                     ->placeholder('Masukkan nama departemen')
                     ->required(),
 
@@ -69,7 +69,7 @@ class DepartmentResource extends Resource
                     ->sortable(),
 
                 TextColumn::make('users_count')
-                    ->label('Jumlah Pengguna')
+                    ->label('Jumlah Staf')
                     ->counts('users')
                     ->sortable(),
             ])

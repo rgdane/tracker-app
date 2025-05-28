@@ -10,6 +10,12 @@ class EditDepartment extends EditRecord
 {
     protected static string $resource = DepartmentResource::class;
 
+    protected ?string $heading = 'Ubah Departemen';
+
+    public function getBreadcrumb(): string {
+        return 'Ubah';
+    }
+
     protected function getHeaderActions(): array
     {
         return [
