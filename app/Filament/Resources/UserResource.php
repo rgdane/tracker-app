@@ -13,6 +13,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -91,12 +92,18 @@ class UserResource extends Resource
                     ->sortable(),
 
                 TextColumn::make('roles.name')
-                    ->label('Role')
+                    ->label('Peran')
                     ->badge()
                     ->sortable(),
             ])
             ->filters([
-                //
+                SelectFilter::make('department')
+                    ->label('Departemen')
+                    ->relationship('department','name'),
+                
+                SelectFilter::make('roles')
+                    ->label('Peran')
+                    ->relationship('roles','name')
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
