@@ -4,8 +4,10 @@ namespace App\Filament\Resources\TaskResource\Pages;
 
 use App\Exports\TaskReportExport;
 use App\Filament\Resources\TaskResource;
+use App\Models\User;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ListTasks extends ListRecords
@@ -14,6 +16,12 @@ class ListTasks extends ListRecords
 
     protected function getHeaderActions(): array
     {
+        $user = User::find(Auth::user()->id);
+
+        if ($user->hasRole('staff')) {
+            return [];
+        }
+
         return [
             Actions\Action::make('export')
             ->label('Export Laporan')
