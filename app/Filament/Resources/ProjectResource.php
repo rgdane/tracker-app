@@ -59,7 +59,7 @@ class ProjectResource extends Resource
                 ->label('Tanggal Selesai'),
 
             Repeater::make('users')
-                ->label('Anggota Proyek')
+                ->label('Anggota')
                 ->schema([
                     Select::make('user_id')
                         ->label('Anggota')
@@ -105,11 +105,6 @@ class ProjectResource extends Resource
                     ->sortable()
                     ->searchable(),
 
-                TextColumn::make('description')
-                    ->label('Deskripsi')
-                    ->sortable()
-                    ->searchable(),
-
                 TextColumn::make('start_date')
                     ->label('Mulai')
                     ->date('d M Y'),
@@ -125,7 +120,7 @@ class ProjectResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
                 Tables\Actions\ViewAction::make()
-                    ->modalHeading('Anggota Proyek')
+                    ->modalHeading('Detail Proyek')
                     ->mutateRecordDataUsing(function (array $data, \Illuminate\Database\Eloquent\Model $record): array {
                         $data['users'] = $record->users->map(fn($user) => [
                             'user_id' => $user->id,
@@ -135,11 +130,17 @@ class ProjectResource extends Resource
                         return $data;
                     })
                     ->form([
+                        Textarea::make('description')
+                            ->label('Deskripsi')
+                            ->placeholder('Belum ada deskripsi')
+                            ->rows(3)
+                            ->columnSpan('full'),
+
                         Repeater::make('users')
-                            ->label('')
+                            ->label('Anggota Proyek')
                             ->schema([
                                 Select::make('user_id')
-                                    ->label('Anggota')
+                                    ->label('Nama')
                                     ->options(User::pluck('name', 'id')->toArray())
                                     ->disabled(),
 
@@ -156,7 +157,6 @@ class ProjectResource extends Resource
                             ->placeholder('Belum ada anggota')
                             ->visible(fn($get) => count($get('users') ?? []) === 0),
                     ]),
-
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

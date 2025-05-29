@@ -21,8 +21,8 @@ class TaskReportExport implements FromArray, WithHeadings, WithStyles, ShouldAut
     public function array(): array
     {
         return $this->tasks->map(fn ($task) => [
-            'Project' => $task->project->name ?? '-',
-            'User' => $task->user->name ?? '-',
+            'Proyek' => $task->project->name ?? '-',
+            'Ditugaskan Kepada' => $task->user->name ?? '-',
             'Judul' => $task->title,
             'Status' => $task->status,
             'Tenggat' => $task->deadline,
@@ -31,7 +31,7 @@ class TaskReportExport implements FromArray, WithHeadings, WithStyles, ShouldAut
 
     public function headings(): array
     {
-        return ['Project', 'User', 'Judul', 'Status', 'Tenggat'];
+        return ['Proyek', 'Ditugaskan Kepada', 'Judul', 'Status', 'Tenggat'];
     }
 
     public function styles(Worksheet $sheet): array

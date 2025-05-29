@@ -124,6 +124,15 @@ class TaskResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->modalHeading('Detail Tugas')
+                    ->form([
+                        Textarea::make('description')
+                            ->label('Deskripsi')
+                            ->placeholder('Belum ada deskripsi')
+                            ->rows(3)
+                            ->columnSpan('full'),
+                    ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -138,13 +147,13 @@ class TaskResource extends Resource
 
         $filters = [];
 
-        // Filter Proyek: hanya proyek yang diikuti user (staff)
+        // Filter Proyek: hanya proyek yang diikuti user (staff, manager)
         $filters[] = SelectFilter::make('project_id')
             ->label('Proyek')
             ->options(function () {
                 $user = User::find(Auth::user()->id);
 
-                if ($user->hasRole('staff')) {
+                if ($user->hasRole(['staff', 'manager'])) {
                     return \App\Models\Project::whereHas('users', function ($q) use ($user) {
                         $q->where('user_id', $user->id);
                     })->pluck('name', 'id');
@@ -156,9 +165,23 @@ class TaskResource extends Resource
 
         // Filter User: hanya muncul jika bukan staff
         if (!$user->hasRole('staff')) {
-            $filters[] = SelectFilter::make('user')
+            $filters[] = SelectFilter::make('user_id')
                 ->label('Ditugaskan Kepada')
-                ->relationship('user', 'name');
+                ->options(function () use ($user) {
+                    // Jika manajer, tampilkan user yang ikut proyek yang sama
+                    if ($user->hasRole('manager')) {
+                        // Ambil semua proyek yang diikuti manajer
+                        $projectIds = $user->projects()->pluck('projects.id');
+
+                        // Ambil user yang terlibat di proyek-proyek tersebut
+                        return \App\Models\User::whereHas('projects', function ($query) use ($projectIds) {
+                            $query->whereIn('projects.id', $projectIds);
+                        })->pluck('name', 'id');
+                    }
+
+                    // Untuk non-staff lain (misal: super-admin), tampilkan semua user
+                    return \App\Models\User::pluck('name', 'id');
+                });
         }
 
         return $filters;
@@ -183,9 +206,19 @@ class TaskResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
+        $user = User::find(Auth::user()->id);
 
-        if (User::find(Auth::user()->id)->hasRole('staff')) {
+        if ($user->hasRole('staff')) {
+            // Ambil hanya task yang dimiliki staff
             return $query->where('user_id', auth()->id());
+        }
+
+        if ($user->hasRole('manager')) {
+            // Ambil ID semua project yang dimiliki atau diikuti manager
+            $projectIds = $user->projects()->pluck('projects.id');
+
+            // Ambil semua task yang ada di proyek tersebut
+            return $query->whereIn('project_id', $projectIds);
         }
 
         return $query;

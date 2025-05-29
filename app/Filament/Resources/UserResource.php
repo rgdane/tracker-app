@@ -51,14 +51,15 @@ class UserResource extends Resource
 
                     TextInput::make('password')
                         ->label('Password')
-                        ->placeholder('Masukkan password pengguna minimal 8 karakter')
-                        ->minLength(8)
+                        ->placeholder('Kosongkan jika tidak ingin mengubah password')
                         ->password()
                         ->revealable()
+                        ->minLength(8)
+                        ->maxLength(255)
                         ->required(fn(string $context) => $context === 'create')
                         ->dehydrateStateUsing(fn($state) => filled($state) ? bcrypt($state) : null)
                         ->dehydrated(fn($state) => filled($state))
-                        ->maxLength(255),
+                        ->afterStateHydrated(fn($set) => $set('password', '')),
                 ]),
 
             Section::make('Akses & Divisi')
@@ -67,13 +68,13 @@ class UserResource extends Resource
                         ->label('Departemen')
                         ->relationship('department', 'name')
                         ->required()
-                        ->disabled(fn () => User::find(Auth::user()->id)->hasRole('staff')),
+                        ->disabled(fn() => User::find(Auth::user()->id)->hasRole(['staff', 'manager'])),
 
                     Select::make('roles')
                         ->label('Peran')
                         ->relationship('roles', 'name')
                         ->required()
-                        ->disabled(fn () => User::find(Auth::user()->id)->hasRole('staff')),
+                        ->disabled(fn() => User::find(Auth::user()->id)->hasRole(['staff', 'manager'])),
                 ]),
         ]);
     }
@@ -153,7 +154,7 @@ class UserResource extends Resource
     {
         $query = parent::getEloquentQuery();
 
-        if (User::find(Auth::user()->id)->hasRole('staff')) {
+        if (User::find(Auth::user()->id)->hasRole(['staff', 'manager'])) {
             return $query->where('id', auth()->id());
         }
 
