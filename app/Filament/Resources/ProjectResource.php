@@ -119,8 +119,6 @@ class ProjectResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
                 Tables\Actions\ViewAction::make()
                     ->modalHeading('Detail Proyek')
                     ->mutateRecordDataUsing(function (array $data, \Illuminate\Database\Eloquent\Model $record): array {
@@ -159,6 +157,8 @@ class ProjectResource extends Resource
                             ->placeholder('Belum ada anggota')
                             ->visible(fn($get) => count($get('users') ?? []) === 0),
                     ]),
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

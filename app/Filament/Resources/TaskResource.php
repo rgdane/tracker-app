@@ -94,15 +94,15 @@ class TaskResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('title')
-                    ->label('Judul')
-                    ->searchable()
-                    ->sortable(),
-
                 TextColumn::make('project.name')
                     ->label('Proyek')
                     ->sortable()
                     ->searchable(),
+
+                TextColumn::make('title')
+                    ->label('Judul')
+                    ->searchable()
+                    ->sortable(),
 
                 TextColumn::make('user.name')
                     ->label('Ditugaskan Kepada')
@@ -124,8 +124,6 @@ class TaskResource extends Resource
             ])
             ->filters(self::getFilters())
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
                 Tables\Actions\ViewAction::make()
                     ->modalHeading('Detail Tugas')
                     ->form([
@@ -135,6 +133,8 @@ class TaskResource extends Resource
                             ->rows(3)
                             ->columnSpan('full'),
                     ]),
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

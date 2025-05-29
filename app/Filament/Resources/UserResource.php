@@ -53,7 +53,11 @@ class UserResource extends Resource
 
                     TextInput::make('password')
                         ->label('Password')
-                        ->placeholder('Kosongkan jika tidak ingin mengubah password')
+                        ->placeholder(function (string $context) {
+                            return $context === 'create'
+                                ? 'Masukkan password minimal 8 karakter'
+                                : 'Kosongkan jika tidak ingin mengubah password';
+                        })
                         ->password()
                         ->revealable()
                         ->minLength(8)
