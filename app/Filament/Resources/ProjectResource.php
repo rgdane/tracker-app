@@ -64,6 +64,15 @@ class ProjectResource extends Resource
                     Select::make('user_id')
                         ->label('Anggota')
                         ->options(User::pluck('name', 'id'))
+                        ->disableOptionWhen(function ($value, $state, $get, $set, $livewire) {
+                            // Ambil semua user_id yang sudah dipilih, kecuali current
+                            $selected = collect($get('../users'))
+                                ->pluck('user_id')
+                                ->filter(fn($v) => $v !== $state)
+                                ->toArray();
+
+                            return in_array($value, $selected);
+                        })
                         ->required(),
 
                     TextInput::make('role')
