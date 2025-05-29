@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Exports\TaskReportExport;
 use App\Filament\Resources\TaskResource\Pages;
 use App\Filament\Resources\TaskResource\RelationManagers;
 use App\Models\Task;
@@ -14,9 +15,11 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TaskResource extends Resource
 {
@@ -35,11 +38,20 @@ class TaskResource extends Resource
                 Select::make('project_id')
                     ->relationship('project', 'name')
                     ->label('Proyek')
-                    ->required(),
+                    ->required()
+                    ->reactive(), // Trigger re-render pada perubahan nilai
 
                 Select::make('user_id')
-                    ->relationship('user', 'name')
-                    ->label('Staf')
+                    ->label('Ditugaskan Kepada')
+                    ->options(function ($get) {
+                        $projectId = $get('project_id');
+
+                        if (!$projectId) return [];
+
+                        $project = \App\Models\Project::with('users')->find($projectId);
+
+                        return $project?->users->pluck('name', 'id') ?? [];
+                    })
                     ->required(),
 
                 TextInput::make('title')
@@ -74,16 +86,17 @@ class TaskResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('title')
+                    ->label('Judul')
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('project.name')
-                    ->label('Project')
+                    ->label('Proyek')
                     ->sortable()
                     ->searchable(),
 
                 TextColumn::make('user.name')
-                    ->label('Assigned To')
+                    ->label('Ditugaskan Kepada')
                     ->sortable(),
 
                 TextColumn::make('status')
@@ -96,11 +109,18 @@ class TaskResource extends Resource
                     ->badge(),
 
                 TextColumn::make('deadline')
+                    ->label('Tenggat')
                     ->sortable()
                     ->date('d M Y'),
             ])
             ->filters([
-                //
+                SelectFilter::make('project')
+                    ->label('Proyek')
+                    ->relationship('project', 'name'),
+
+                SelectFilter::make('user')
+                    ->label('Ditugaskan Kepada')
+                    ->relationship('user', 'name')
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
