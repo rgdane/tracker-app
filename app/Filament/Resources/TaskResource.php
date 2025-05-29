@@ -31,6 +31,8 @@ class TaskResource extends Resource
 
     protected static ?string $navigationLabel = 'Tugas';
 
+    protected static ?int $navigationSort = 4;
+
     protected static ?string $pluralLabel = 'Kelola Tugas';
 
     public static function form(Form $form): Form
