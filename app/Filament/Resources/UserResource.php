@@ -63,7 +63,6 @@ class UserResource extends Resource
                     Select::make('department_id')
                         ->label('Departemen')
                         ->relationship('department', 'name')
-                        ->searchable()
                         ->required(),
 
                     Select::make('roles')
