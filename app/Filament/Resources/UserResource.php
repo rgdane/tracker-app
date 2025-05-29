@@ -17,6 +17,9 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
+use Spatie\Permission\Traits\HasRoles;
+
 
 class UserResource extends Resource
 {
@@ -63,12 +66,14 @@ class UserResource extends Resource
                     Select::make('department_id')
                         ->label('Departemen')
                         ->relationship('department', 'name')
-                        ->required(),
+                        ->required()
+                        ->disabled(fn () => User::find(Auth::user()->id)->hasRole('staff')),
 
                     Select::make('roles')
                         ->label('Peran')
                         ->relationship('roles', 'name')
-                        ->required(),
+                        ->required()
+                        ->disabled(fn () => User::find(Auth::user()->id)->hasRole('staff')),
                 ]),
         ]);
     }
@@ -95,15 +100,7 @@ class UserResource extends Resource
                     ->badge()
                     ->sortable(),
             ])
-            ->filters([
-                SelectFilter::make('department')
-                    ->label('Departemen')
-                    ->relationship('department','name'),
-                
-                SelectFilter::make('roles')
-                    ->label('Peran')
-                    ->relationship('roles','name')
-            ])
+            ->filters(self::getFilters())
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
@@ -113,6 +110,27 @@ class UserResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getFilters(): array
+    {
+        $user = User::find(Auth::user()->id);
+
+        $filters = [];
+
+        if (!$user->hasRole('staff')) {
+            $filters[] = SelectFilter::make('department')
+                ->label('Departemen')
+                ->relationship('department', 'name');
+        }
+
+        if (!$user->hasRole('staff')) {
+            $filters[] = SelectFilter::make('roles')
+                ->label('Peran')
+                ->relationship('roles', 'name');
+        }
+
+        return $filters;
     }
 
     public static function getRelations(): array
@@ -129,5 +147,16 @@ class UserResource extends Resource
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        if (User::find(Auth::user()->id)->hasRole('staff')) {
+            return $query->where('id', auth()->id());
+        }
+
+        return $query;
     }
 }

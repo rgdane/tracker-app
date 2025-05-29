@@ -6,6 +6,7 @@ use App\Exports\TaskReportExport;
 use App\Filament\Resources\TaskResource\Pages;
 use App\Filament\Resources\TaskResource\RelationManagers;
 use App\Models\Task;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -19,6 +20,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 
 class TaskResource extends Resource
@@ -39,7 +41,8 @@ class TaskResource extends Resource
                     ->relationship('project', 'name')
                     ->label('Proyek')
                     ->required()
-                    ->reactive(), // Trigger re-render pada perubahan nilai
+                    ->reactive()
+                    ->disabled(fn() => User::find(Auth::user()->id)->hasRole('staff')), // Trigger re-render pada perubahan nilai
 
                 Select::make('user_id')
                     ->label('Ditugaskan Kepada')
@@ -52,19 +55,22 @@ class TaskResource extends Resource
 
                         return $project?->users->pluck('name', 'id') ?? [];
                     })
-                    ->required(),
+                    ->required()
+                    ->disabled(fn() => User::find(Auth::user()->id)->hasRole('staff')),
 
                 TextInput::make('title')
                     ->label('Judul')
                     ->placeholder('Masukkan judul tugas')
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->disabled(fn() => User::find(Auth::user()->id)->hasRole('staff')),
 
                 Textarea::make('description')
                     ->label('Deskripsi')
                     ->placeholder('Masukkan deskripsi tugas')
                     ->rows(4)
-                    ->columnSpan('full'),
+                    ->columnSpan('full')
+                    ->disabled(fn() => User::find(Auth::user()->id)->hasRole('staff')),
 
                 Select::make('status')
                     ->options([
@@ -77,7 +83,8 @@ class TaskResource extends Resource
 
                 DatePicker::make('deadline')
                     ->label('Tenggat')
-                    ->required(),
+                    ->required()
+                    ->disabled(fn() => User::find(Auth::user()->id)->hasRole('staff')),
             ]);
     }
 
@@ -113,15 +120,7 @@ class TaskResource extends Resource
                     ->sortable()
                     ->date('d M Y'),
             ])
-            ->filters([
-                SelectFilter::make('project')
-                    ->label('Proyek')
-                    ->relationship('project', 'name'),
-
-                SelectFilter::make('user')
-                    ->label('Ditugaskan Kepada')
-                    ->relationship('user', 'name')
-            ])
+            ->filters(self::getFilters())
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
@@ -131,6 +130,38 @@ class TaskResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getFilters(): array
+    {
+        $user = User::find(Auth::user()->id);
+
+        $filters = [];
+
+        // Filter Proyek: hanya proyek yang diikuti user (staff)
+        $filters[] = SelectFilter::make('project_id')
+            ->label('Proyek')
+            ->options(function () {
+                $user = User::find(Auth::user()->id);
+
+                if ($user->hasRole('staff')) {
+                    return \App\Models\Project::whereHas('users', function ($q) use ($user) {
+                        $q->where('user_id', $user->id);
+                    })->pluck('name', 'id');
+                }
+
+                // Untuk non-staff, ambil semua proyek
+                return \App\Models\Project::pluck('name', 'id');
+            });
+
+        // Filter User: hanya muncul jika bukan staff
+        if (!$user->hasRole('staff')) {
+            $filters[] = SelectFilter::make('user')
+                ->label('Ditugaskan Kepada')
+                ->relationship('user', 'name');
+        }
+
+        return $filters;
     }
 
     public static function getRelations(): array
@@ -147,5 +178,16 @@ class TaskResource extends Resource
             'create' => Pages\CreateTask::route('/create'),
             'edit' => Pages\EditTask::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        if (User::find(Auth::user()->id)->hasRole('staff')) {
+            return $query->where('user_id', auth()->id());
+        }
+
+        return $query;
     }
 }
