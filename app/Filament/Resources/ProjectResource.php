@@ -5,8 +5,11 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ProjectResource\Pages;
 use App\Filament\Resources\ProjectResource\RelationManagers;
 use App\Models\Project;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -15,6 +18,7 @@ use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ProjectResource extends Resource
@@ -22,7 +26,7 @@ class ProjectResource extends Resource
     protected static ?string $model = Project::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-    
+
     protected static ?string $navigationLabel = 'Proyek';
 
     protected static ?string $pluralLabel = 'Kelola Proyek';
@@ -53,6 +57,28 @@ class ProjectResource extends Resource
 
             DatePicker::make('end_date')
                 ->label('Tanggal Selesai'),
+
+            Repeater::make('users')
+                ->label('Anggota Proyek')
+                ->schema([
+                    Select::make('user_id')
+                        ->label('Anggota')
+                        ->options(User::pluck('name', 'id'))
+                        ->required(),
+
+                    TextInput::make('role')
+                        ->label('Peran')
+                        ->datalist([
+                            'Developer',
+                            'PM',
+                            'QA',
+                        ])
+                        ->placeholder('Contoh: Developer, PM, QA')
+                ])
+                ->defaultItems(1)
+                ->addActionLabel('Tambah Anggota')
+                ->columns(2)
+                ->collapsible(),
         ]);
     }
 
@@ -69,7 +95,7 @@ class ProjectResource extends Resource
                     ->label('Nama')
                     ->sortable()
                     ->searchable(),
-                
+
                 TextColumn::make('description')
                     ->label('Deskripsi')
                     ->sortable()
@@ -89,6 +115,39 @@ class ProjectResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->modalHeading('Anggota Proyek')
+                    ->mutateRecordDataUsing(function (array $data, \Illuminate\Database\Eloquent\Model $record): array {
+                        $data['users'] = $record->users->map(fn($user) => [
+                            'user_id' => $user->id,
+                            'role' => $user->pivot->role,
+                        ])->toArray();
+
+                        return $data;
+                    })
+                    ->form([
+                        Repeater::make('users')
+                            ->label('')
+                            ->schema([
+                                Select::make('user_id')
+                                    ->label('Anggota')
+                                    ->options(User::pluck('name', 'id')->toArray())
+                                    ->disabled(),
+
+                                TextInput::make('role')
+                                    ->label('Peran')
+                                    ->disabled(),
+                            ])
+                            ->columns(2)
+                            ->visible(fn($state) => count($state ?? []) > 0),
+
+                        // Fallback helper if kosong
+                        TextInput::make('empty_state')
+                            ->label('')
+                            ->placeholder('Belum ada anggota')
+                            ->visible(fn($get) => count($get('users') ?? []) === 0),
+                    ]),
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
