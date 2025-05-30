@@ -452,6 +452,102 @@ class PermissionsTableSeeder extends Seeder
                 'created_at' => '2025-05-29 08:59:19',
                 'updated_at' => '2025-05-29 08:59:19',
             ),
+            54 => 
+            array (
+                'id' => 55,
+                'name' => 'view_task::report',
+                'guard_name' => 'web',
+                'created_at' => '2025-05-30 03:33:24',
+                'updated_at' => '2025-05-30 03:33:24',
+            ),
+            55 => 
+            array (
+                'id' => 56,
+                'name' => 'view_any_task::report',
+                'guard_name' => 'web',
+                'created_at' => '2025-05-30 03:33:24',
+                'updated_at' => '2025-05-30 03:33:24',
+            ),
+            56 => 
+            array (
+                'id' => 57,
+                'name' => 'create_task::report',
+                'guard_name' => 'web',
+                'created_at' => '2025-05-30 03:33:24',
+                'updated_at' => '2025-05-30 03:33:24',
+            ),
+            57 => 
+            array (
+                'id' => 58,
+                'name' => 'update_task::report',
+                'guard_name' => 'web',
+                'created_at' => '2025-05-30 03:33:24',
+                'updated_at' => '2025-05-30 03:33:24',
+            ),
+            58 => 
+            array (
+                'id' => 59,
+                'name' => 'restore_task::report',
+                'guard_name' => 'web',
+                'created_at' => '2025-05-30 03:33:24',
+                'updated_at' => '2025-05-30 03:33:24',
+            ),
+            59 => 
+            array (
+                'id' => 60,
+                'name' => 'restore_any_task::report',
+                'guard_name' => 'web',
+                'created_at' => '2025-05-30 03:33:24',
+                'updated_at' => '2025-05-30 03:33:24',
+            ),
+            60 => 
+            array (
+                'id' => 61,
+                'name' => 'replicate_task::report',
+                'guard_name' => 'web',
+                'created_at' => '2025-05-30 03:33:24',
+                'updated_at' => '2025-05-30 03:33:24',
+            ),
+            61 => 
+            array (
+                'id' => 62,
+                'name' => 'reorder_task::report',
+                'guard_name' => 'web',
+                'created_at' => '2025-05-30 03:33:24',
+                'updated_at' => '2025-05-30 03:33:24',
+            ),
+            62 => 
+            array (
+                'id' => 63,
+                'name' => 'delete_task::report',
+                'guard_name' => 'web',
+                'created_at' => '2025-05-30 03:33:24',
+                'updated_at' => '2025-05-30 03:33:24',
+            ),
+            63 => 
+            array (
+                'id' => 64,
+                'name' => 'delete_any_task::report',
+                'guard_name' => 'web',
+                'created_at' => '2025-05-30 03:33:24',
+                'updated_at' => '2025-05-30 03:33:24',
+            ),
+            64 => 
+            array (
+                'id' => 65,
+                'name' => 'force_delete_task::report',
+                'guard_name' => 'web',
+                'created_at' => '2025-05-30 03:33:24',
+                'updated_at' => '2025-05-30 03:33:24',
+            ),
+            65 => 
+            array (
+                'id' => 66,
+                'name' => 'force_delete_any_task::report',
+                'guard_name' => 'web',
+                'created_at' => '2025-05-30 03:33:24',
+                'updated_at' => '2025-05-30 03:33:24',
+            ),
         ));
         
         
