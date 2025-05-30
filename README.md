@@ -43,7 +43,7 @@ cp .env.example .env
 
 Edit `.env` sesuai koneksi database lokal anda:
 ```
-DB_DATABASE=tracker_db
+DB_DATABASE=db_tracker_app
 DB_USERNAME=root
 DB_PASSWORD=
 ```
